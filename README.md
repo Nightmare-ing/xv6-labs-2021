@@ -24,4 +24,14 @@ when entering kernel space. The `sleep` callable from a user program in
 `user/user.h` is actually implemented in `user/usys.S`, which loads the address
 for the `sleep` system call in `kernel/sysproc.c` and then run `ecall`.
 
+## Pingpong
+
+Some notes for this part
+
+- For a pipe `p`, the read end is `p[0]`, the write end is `p[1]`, can't be
+  exchanged.
+- No need to wait for child to return, because `read` will pause until all file
+  descriptors referring to the write end to be closed
+- Should handle all the errors for library functions
+- Also checked that whether the read contents match the written contents
 
