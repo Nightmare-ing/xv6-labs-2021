@@ -16,3 +16,12 @@ I fixed the second error by change the signature of `rwsbrk` to be `void
 rwsbrk(char *s)`, according to [this link](https://github.com/mit-pdos/xv6-riscv/commit/a3f3a04f913535868f5030d9845f7e4b90edb379).
 
 Now I can compile successfully.
+
+## Sleep
+
+`kernel/sysproc.c` implements the `sleep` system call, which is the code run
+when entering kernel space. The `sleep` callable from a user program in
+`user/user.h` is actually implemented in `user/usys.S`, which loads the address
+for the `sleep` system call in `kernel/sysproc.c` and then run `ecall`.
+
+
