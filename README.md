@@ -35,3 +35,23 @@ Some notes for this part
 - Should handle all the errors for library functions
 - Also checked that whether the read contents match the written contents
 
+## Find
+
+Some notes for this part
+
+- When trying to get the type of the items in the directory, we can use `stat`,
+  with which we don't need to open the file to get a file descriptor, and
+  don't need to close it after retrieving status. Otherwise, if we forget to
+  close the file descriptor, it's very likely to run out of file descriptors
+- Can print the error message to `stderr` using `fprintf` with `2` as the file
+  descriptor, but if the error happens when trying to get the status of the
+  items in the directory, can just use `printf`
+- Follows the convention in `ls.c`, the maximum length of the file name is
+  defined as `DIRSIZ`, and no matter no many characters the actual file name
+  has, we always use a fixed length buffer (which is `DIRSIZ`) to store it
+- `dirent` stands for directory entry. xv6 book mentioned that, each `inode`
+  can have multiple names, called *links*, and each link consists of an **entry
+  in a directory**, and that's actually `dirent`. It also mentioned that, the
+  entry contains a file name and a reference to an inode, which is `inum` and
+  `name` in `struct dirent`.
+
