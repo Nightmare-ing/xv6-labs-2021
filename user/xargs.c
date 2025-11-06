@@ -68,6 +68,10 @@ int main(int argc, char *argv[]) {
         // put the letter into the buffer
         *p++ = letter;
     }
+
+    for (int i = 0; i < argc - 1; ++i) {
+        free(args[i]);
+    }
     exit(0);
 }
 
