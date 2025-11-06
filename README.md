@@ -57,3 +57,9 @@ Some notes for this part
   entry contains a file name and a reference to an inode, which is `inum` and
   `name` in `struct dirent`.
 
+### Xargs
+
+Use `malloc` to allocate memory when storing the command args into a new `argv`
+array, which later will be fed into `exec` in the child process.
+Remember to free up this part of memory to avoid memroy leak.
+

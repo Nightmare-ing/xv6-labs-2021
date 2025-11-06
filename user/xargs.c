@@ -66,6 +66,10 @@ int main(int argc, char *argv[]) {
         }
             
         // put the letter into the buffer
+        if (p - buf > 512) {
+            fprintf(2, "xargs: argument is too long\n");
+            exit(1);
+        }
         *p++ = letter;
     }
 
