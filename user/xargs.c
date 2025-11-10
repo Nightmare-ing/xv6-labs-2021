@@ -2,17 +2,17 @@
 #include "user/user.h"
 #include "kernel/param.h"
 
-char *cpy_str(char *source);
-
 int main(int argc, char *argv[]) {
     char *args[MAXARG];
 
     // copy the arguments except xargs from argv to args
     for (int i = 1; i < argc; ++i) {
-        char *copy;
-        if ((copy = cpy_str(argv[i])) != 0) {
-            args[i - 1] = copy;
+        char *copy = malloc(strlen(argv[i]) + 1);
+        if (copy == 0) {
+            fprintf(2, "xargs: failed to malloc memory to copy commands of xargs\n");
         }
+        strcpy(copy, argv[i]);
+        args[i - 1] = copy;
     }
 
 
@@ -24,11 +24,13 @@ int main(int argc, char *argv[]) {
     while (read(0, &letter, 1) == 1) {
         if (letter == ' ' || letter == '\n') {
             *p = '\0';
-            char *copy;
-            if ((copy = cpy_str(buf)) != 0) {
-                args[num_args] = copy;
-                ++num_args;
+            char *copy = malloc(strlen(buf) + 1);
+            if (copy == 0) {
+                fprintf(2, "xargs: failed to malloc memory to copy commands fed into xargs\n");
             }
+            strcpy(copy, buf);
+            args[num_args] = copy;
+            ++num_args;
 
             if (num_args > MAXARG) {
                 fprintf(2, "xargs: too many arguments\n");
@@ -77,18 +79,5 @@ int main(int argc, char *argv[]) {
         free(args[i]);
     }
     exit(0);
-}
-
-// allocate memory and copy the string, return the address of the allocated
-// memory
-char *cpy_str(char *source) {
-    int len = strlen(source);
-    if (len > 0) {
-        char *copy = malloc(len + 1);
-        memmove(copy, source, len + 1);
-        return copy;
-    } else {
-        return 0;
-    }
 }
 
