@@ -104,5 +104,5 @@ uint64 sys_trace(void) {
     }
 
     myproc()->traced_syscall = mask;
-
+    return 0;
 }
