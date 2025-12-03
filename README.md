@@ -63,3 +63,30 @@ Use `malloc` to allocate memory when storing the command args into a new `argv`
 array, which later will be fed into `exec` in the child process.
 Remember to free up this part of memory to avoid memroy leak.
 
+## System Calls
+
+### System Call Tracing
+
+In `sysproc.c`, `sys_trace` reads calling arguments to variable `mask`, and
+store this `mask` to field `traced_syscall` of `proc`.  
+Then in `syscall.c`, when we call system calls, we check whether there's a mask
+bit in `proc.traced_syscall`, if it is, then we print out tracing information
+
+### Sysinfo
+
+In `sysproc.c`, `sys_sysinfo` reads the calling arguments to variable `info_t`,
+which is the address that the user wants to store `sysinfo`.
+
+To get the free memory size, according to the contents in `book-riscv-rev4`
+Chapter 3.5, in `kalloc.c` we use a struct `kmem` to store all free pages in a list
+`keme.freelist`. So we just need to iterate through this list, find how many
+pages are free, and then multiply with the page size.
+
+To get the number of processes, see `allocproc` function in `proc.c` for hint.
+We have to iterate through all processes stored in `proc[]`, check the status
+of each process, and count the number of processes whose state is not `UNUSED`.
+
+Finally we use `copyout` to copy the struct `sinfo` back to user page table. As
+is mentioned in `book-riscv-rev4` Chapter 4.4, `copyout` will use `walk` to
+find the PA of VA `info_t`, and then store `sinfo` into that address
+
