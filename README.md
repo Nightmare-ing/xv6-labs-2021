@@ -90,3 +90,24 @@ Finally we use `copyout` to copy the struct `sinfo` back to user page table. As
 is mentioned in `book-riscv-rev4` Chapter 4.4, `copyout` will use `walk` to
 find the PA of VA `info_t`, and then store `sinfo` into that address
 
+## Page Tables
+
+### Speed Up System Calls
+
+The steps for this part are
+
+- Modify `proc` struct to store PA of usyscall page
+- Allocate and initialize page for usyscall page in `allocproc`
+- Performing page mapping in `proc_pagetable`
+- Free the page in freeproc
+- Unmap the page in `proc_freepagetable`
+    - Otherwise will get `freewalk` error because PTE_V hasn't been removed
+      before freeing the page table
+
+This shared page can only be used to trasfer data from kernel to user, because
+this page is read-only from user's point of view.
+Thus only system calls that transfer data from kernel to user can be speed up
+with this method.
+
+Thus except `getpid`, only `fstat` can be speed up with shared pages
+
