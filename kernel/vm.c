@@ -439,17 +439,17 @@ static void print_ptes(pagetable_t pagetable, uint8 level) {
         if ((pte & PTE_V)) {
             uint64 pa = PTE2PA(pte);
 
-            if (level == 0) {
+            if (level == 2) {
                 printf("..");
             } else if (level == 1) {
                 printf(".. ..");
-            } else if (level == 2){
+            } else if (level == 0){
                 printf(".. .. ..");
             }
             printf("%d: pte %p pa %p\n", i, pte, pa);
 
-            if (level < 2) {
-                print_ptes((pagetable_t)pa, level+1);
+            if (level > 0) {
+                print_ptes((pagetable_t)pa, level-1);
             }
         }
     }
@@ -457,6 +457,6 @@ static void print_ptes(pagetable_t pagetable, uint8 level) {
 
 void vmprint(pagetable_t pagetable) {
     printf("page table %p\n", pagetable);
-    print_ptes(pagetable, 0);
+    print_ptes(pagetable, 2);
 }
 
