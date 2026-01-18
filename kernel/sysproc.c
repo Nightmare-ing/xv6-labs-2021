@@ -8,6 +8,7 @@
 #include "proc.h"
 #include "sysinfo.h"
 
+
 uint64
 sys_exit(void)
 {
@@ -78,11 +79,38 @@ sys_sleep(void)
 
 
 #ifdef LAB_PGTBL
-int
-sys_pgaccess(void)
-{
-  // lab pgtbl: your code here.
-  return 0;
+int sys_pgaccess(void) {
+    uint64 va_start = 0;
+    int n = 0;
+    uint64 buffer_addr = 0;
+    uint64 buffer = 0;
+
+    // retrieve arguments
+    if (argaddr(0, &va_start) < 0 || argint(1, &n) < 0 || argaddr(2, &buffer_addr) < 0) {
+        return -1;
+    }
+
+    // check whether n is in valid arange
+    if (n < 0 || n > 64) {
+        printf("error: the maximum pages to check is 64, i.e. 0 < n < 64. You are requesting to check %d pages", n);
+    }
+
+    uint64 va = va_start;
+    struct proc *p = myproc();
+
+    for (int i = 0; i < n; ++i) {
+        pte_t *pte = walk(p->pagetable, va, 0);
+        if ((PTE_A & (*pte)) != 0) {
+            buffer |= (1L << i);
+        }
+        // clear PTE_A after checking it
+        *pte &= (~PTE_A);
+        va += PGSIZE;
+    }
+
+    copyout(p->pagetable, buffer_addr, (char *)&buffer, 8);
+
+    return 0;
 }
 #endif
 

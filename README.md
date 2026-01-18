@@ -111,6 +111,8 @@ with this method.
 
 Thus except `getpid`, only `fstat` can be speed up with shared pages
 
+To test this part, run `make GRADEFLAGS=ugetpid grade`.
+
 ### Print a page table
 
 Because the leading dots are different for three level of page tables, so maybe
@@ -121,4 +123,14 @@ it's better to pass in an integer to represent different layers
 	- Then Page 2 is a stack page
 - According to the permission of Page 1, which is `XWRV`. It doesn't contain `U`, thus user can't R/W the memory mapped 
 - The permission of the third to last page is `URV`, which is just the page we added in the first part
+
+To test this part, run `make GRADEFLAGS=printout grade`.
+
+### Detecting which pages have been accessed
+
+- To use `walk`, need to add this to `defs.h`
+- User pagetable is stored in `proc` struct, one process can switch in kernel
+  mode and user mode
+
+To test this part, run `make GRADEFLAGS=pgaccess grade`.
 
