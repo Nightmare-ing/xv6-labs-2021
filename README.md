@@ -111,3 +111,8 @@ with this method.
 
 Thus except `getpid`, only `fstat` can be speed up with shared pages
 
+### Print a page table
+
+Because the leading dots are different for three level of page tables, so maybe
+it's better to pass in an integer to represent different layers
+
