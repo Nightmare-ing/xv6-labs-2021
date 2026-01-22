@@ -134,3 +134,40 @@ To test this part, run `make GRADEFLAGS=printout grade`.
 
 To test this part, run `make GRADEFLAGS=pgaccess grade`.
 
+## Traps
+
+### RISC-V Assembly
+
+```asm
+24:	1141                	addi	sp,sp,-16
+26:	e406                	sd	ra,8(sp)
+28:	e022                	sd	s0,0(sp)
+2a:	0800                	addi	s0,sp,16
+```
+
+Those are function prologue, `addi s0, sp, 16` sets `s0/fp` to previous
+frame.
+
+**Question 3:**
+
+The function `printf` locates at `65e`
+
+**Question 4:**
+
+Just after the `jalr` to `printf` in `main`, the value in `ra` is `pc + 4`,
+which is `0x40`
+
+**Question 5:**
+
+The output is `He110 World`
+
+If the RISC-V were instead big-endian, we should set `i` to `0x726c6400` in
+order to yield the same output.
+We don't have to change `57616` because little-endian and big-endian only
+affects the way to store bytes, the data keeps the same.
+
+**Question 6:**
+
+Garbage value will be printed after `y=`, because `printf` function tries to
+read from the stack for the third argument, although it's not provided.
+
