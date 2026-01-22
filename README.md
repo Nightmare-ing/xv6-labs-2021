@@ -134,3 +134,21 @@ To test this part, run `make GRADEFLAGS=printout grade`.
 
 To test this part, run `make GRADEFLAGS=pgaccess grade`.
 
+## Traps
+
+### RISC-V Assembly
+
+**Question 1:**
+
+According to the calling conventions of RISC-V, registers `a0-a7` contain
+arguments to functions.
+
+For example, register `a2` holds `13` in `main`'s call to `printf`, as is
+shown in `user/call.asm`
+
+**Question 2:**
+
+It seems that the compiler use inline functions and compute result of `f(8)
++ 1` immediately, and then pass result `12` to `a1`.
+
+**Question 3:**
