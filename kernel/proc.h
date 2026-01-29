@@ -105,6 +105,11 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+  uint64 alarm_interval;       // Number of CPU ticks to be alarmed
+  void (*alarm_handler)();     // Pointer to the handler function, to be called
+                               // everytime alarmed
+  uint64 num_ticks;            // Keep track of number of ticks passed since
+                               // the last call
 
   int traced_syscall;
 };

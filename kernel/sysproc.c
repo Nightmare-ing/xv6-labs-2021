@@ -169,3 +169,26 @@ uint64 sys_sysinfo(void) {
 
     return 0;
 }
+
+uint64 sys_sigalarm(void) {
+    int interval = 0;
+    void (*handler)() = 0;
+    struct proc *p = myproc();
+
+    if (argint(0, &interval) < 0) {
+        return -1;
+    }
+    p->alarm_interval = interval;
+
+    if (argaddr(1, (uint64 *)&handler) < 0) {
+        return -1;
+    }
+    p->alarm_handler = handler;
+
+    return 0;
+}
+
+uint64 sys_sigreturn(void) {
+    return 0;
+}
+
