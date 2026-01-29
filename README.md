@@ -118,7 +118,8 @@ To test this part, run `make GRADEFLAGS=ugetpid grade`.
 Because the leading dots are different for three level of page tables, so maybe
 it's better to pass in an integer to represent different layers
 
-- The permission for Page 0 is `UXWRV`, thus it contains `text`, although it's strange to have `W` permission
+- The permission for Page 0 is `UXWRV`, thus it contains `text` and `data`.
+  This if for simplicity when designing xv6, real OS separate `text` and `data`
 - The permission for Page 2 is `UXWRV`, the permission for Page 1 is `XWRV`, thus Page 1 is a guard page, which user can't access.
 	- Then Page 2 is a stack page
 - According to the permission of Page 1, which is `XWRV`. It doesn't contain `U`, thus user can't R/W the memory mapped 
