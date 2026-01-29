@@ -184,3 +184,10 @@ affects the way to store bytes, the data keeps the same.
 Garbage value will be printed after `y=`, because `printf` function tries to
 read from the stack for the third argument, although it's not provided.
 
+### Backtrace
+
+`fp` is the pointer pointing to where the stack frame starts. So we have to
+fetch contents stored in `fp - 16` to get the previous frame pointer.
+Besides, here we can only print out the return address instead of the pointer
+to functions.
+
