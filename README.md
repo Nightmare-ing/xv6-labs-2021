@@ -191,3 +191,12 @@ fetch contents stored in `fp - 16` to get the previous frame pointer.
 Besides, here we can only print out the return address instead of the pointer
 to functions.
 
+### Alarm
+
+Following the steps in the hint. However, if we call `p->alarm_handler` in
+`usertrap` directly, we'll get a panic, that's because we runs user code
+`periodic` in kernel mode.
+Thus we need to jump back to user code and then execute the `periodic` 
+function after we finish running in kernel mode. To do this, we need to change
+the `sepc`, which is stored in `p->trapframe->epc`.
+
