@@ -191,6 +191,7 @@ uint64 sys_sigalarm(void) {
 uint64 sys_sigreturn(void) {
     struct proc *p = myproc();
     p->trapframe->ra = p->ra;
+
     p->trapframe->t0 = p->t0;
     p->trapframe->t1 = p->t1;
     p->trapframe->t2 = p->t2;
@@ -198,6 +199,7 @@ uint64 sys_sigreturn(void) {
     p->trapframe->t4 = p->t4;
     p->trapframe->t5 = p->t5;
     p->trapframe->t6 = p->t6;
+
     p->trapframe->a0 = p->a0;
     p->trapframe->a1 = p->a1;
     p->trapframe->a2 = p->a2;
@@ -206,10 +208,7 @@ uint64 sys_sigreturn(void) {
     p->trapframe->a5 = p->a5;
     p->trapframe->a6 = p->a6;
     p->trapframe->a7 = p->a7;
-    p->trapframe->epc = p->epc;
-    p->trapframe->sp = p->sp;
-    p->trapframe->gp = p->gp;
-    p->trapframe->tp = p->tp;
+
     p->trapframe->s0 = p->s0;
     p->trapframe->s1 = p->s1;
     p->trapframe->s2 = p->s2;
@@ -222,10 +221,9 @@ uint64 sys_sigreturn(void) {
     p->trapframe->s9 = p->s9;
     p->trapframe->s10 = p->s10;
     p->trapframe->s11 = p->s11;
-    p->trapframe->kernel_satp = p->kernel_satp;
-    p->trapframe->kernel_sp = p->kernel_sp;
-    p->trapframe->kernel_trap = p->kernel_trap;
-    p->trapframe->kernel_hartid = p->kernel_hartid;
+
+    p->trapframe->sp = p->sp;
+    p->trapframe->epc = p->epc;
     return 0;
 }
 

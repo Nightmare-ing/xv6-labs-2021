@@ -73,6 +73,7 @@ usertrap(void)
             p->num_ticks = 0;
 
             p->ra = p->trapframe->ra;
+
             p->t0 = p->trapframe->t0;
             p->t1 = p->trapframe->t1;
             p->t2 = p->trapframe->t2;
@@ -80,6 +81,7 @@ usertrap(void)
             p->t4 = p->trapframe->t4;
             p->t5 = p->trapframe->t5;
             p->t6 = p->trapframe->t6;
+
             p->a0 = p->trapframe->a0;
             p->a1 = p->trapframe->a1;
             p->a2 = p->trapframe->a2;
@@ -88,10 +90,7 @@ usertrap(void)
             p->a5 = p->trapframe->a5;
             p->a6 = p->trapframe->a6;
             p->a7 = p->trapframe->a7;
-            p->epc = p->trapframe->epc;
-            p->sp = p->trapframe->sp;
-            p->gp = p->trapframe->gp;
-            p->tp = p->trapframe->tp;
+
             p->s0 = p->trapframe->s0;
             p->s1 = p->trapframe->s1;
             p->s2 = p->trapframe->s2;
@@ -104,10 +103,9 @@ usertrap(void)
             p->s9 = p->trapframe->s9;
             p->s10 = p->trapframe->s10;
             p->s11 = p->trapframe->s11;
-            p->kernel_satp = p->trapframe->kernel_satp;
-            p->kernel_sp = p->trapframe->kernel_sp;
-            p->kernel_trap = p->trapframe->kernel_trap;
-            p->kernel_hartid = p->trapframe->kernel_hartid;
+
+            p->sp = p->trapframe->sp;
+            p->epc = p->trapframe->epc;
 
             p->trapframe->epc = (uint64)(p->alarm_handler);
         }

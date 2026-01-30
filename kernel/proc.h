@@ -145,10 +145,6 @@ struct proc {
   uint64 s9;
   uint64 s10;
   uint64 s11;
-  uint64 kernel_satp;
-  uint64 kernel_sp;
-  uint64 kernel_trap;
-  uint64 kernel_hartid;
 
   int traced_syscall;
 };
