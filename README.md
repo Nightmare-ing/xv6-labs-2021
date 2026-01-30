@@ -135,3 +135,100 @@ To test this part, run `make GRADEFLAGS=printout grade`.
 
 To test this part, run `make GRADEFLAGS=pgaccess grade`.
 
+## Traps
+
+### RISC-V Assembly
+
+```asm
+24:	1141                	addi	sp,sp,-16
+26:	e406                	sd	ra,8(sp)
+28:	e022                	sd	s0,0(sp)
+2a:	0800                	addi	s0,sp,16
+```
+
+Those are function prologue, `addi s0, sp, 16` sets `s0/fp` to previous
+frame.
+
+**Question 1:**
+
+According to the calling conventions of RISC-V, registers `a0-a7` contain
+arguments to functions.
+
+For example, register `a2` holds `13` in `main`'s call to `printf`, as is
+shown in `user/call.asm`
+
+**Question 2:**
+
+It seems that the compiler use inline functions and compute result of `f(8)
++ 1` immediately, and then pass result `12` to `a1`.
+
+**Question 3:**
+
+The function `printf` locates at `65e`
+
+**Question 4:**
+
+Just after the `jalr` to `printf` in `main`, the value in `ra` is `pc + 4`,
+which is `0x40`
+
+**Question 5:**
+
+The output is `He110 World`
+
+If the RISC-V were instead big-endian, we should set `i` to `0x726c6400` in
+order to yield the same output.
+We don't have to change `57616` because little-endian and big-endian only
+affects the way to store bytes, the data keeps the same.
+
+**Question 6:**
+
+Garbage value will be printed after `y=`, because `printf` function tries to
+read from the stack for the third argument, although it's not provided.
+
+### Backtrace
+
+`fp` is the pointer pointing to where the stack frame starts. So we have to
+fetch contents stored in `fp - 16` to get the previous frame pointer.
+Besides, here we can only print out the return address instead of the pointer
+to functions.
+
+### Alarm
+
+Following the steps in the hint. However, if we call `p->alarm_handler` in
+`usertrap` directly, we'll get a panic, that's because we runs user code
+`periodic` in kernel mode.
+Thus we need to jump back to user code and then execute the `periodic` 
+function after we finish running in kernel mode. To do this, we need to change
+the `sepc`, which is stored in `p->trapframe->epc`.
+
+As is shown in the following figure, the process is interrupted by the timer,
+then it jumps to `sys_sigalarm`. After finishing `sys_sigalarm`, it restores
+everything in the page table and tends to jump back to where the original
+process was interrupted.
+However, because we modified `epc`, which is stored in `p->trapframe->epc`,
+kernel will set `pc` to where the `handler` is.
+
+By executing `handler`, it modifies something in the page table, and then call
+`sys_sigreturn` to jump back to where the original process was interrupted.
+At the end of this system call, if `sys_sigreturn` does nothing, the kernel 
+will restore everything inside the page table `B`.
+However, because we want to jump back to where the process was interrupted, we
+modify `p->trapframe->epc` again.
+
+When we first enter `sys_sigalarm`, kernel will increment and save `pc` to 
+`p->trapframe->epc`, thus we have to store this value somewhere else in the
+`struct proc`.
+And when we return from `sys_sigreturn`, we have to retrieve this value and put
+it into `p->trapframe->epc` to jump back.
+
+Besides, when the original process was interrupted, it has no time to save
+Caller registers, thus in `sys_sigalarm` need to save those Caller registers to
+restore the environment.
+And at the end of `handler`, if it returns successfully, by convention it'll
+restore all Callee registers, and thus we don't need to store those registers.
+However, because `handler` jumps to `sys_sigreturn` and never jumps back and
+then return, `handler` fails to restore those Callee registers, so we also have
+to store Callee registers manually.
+
+![Alarm calling process](assets/alarm_process.png)
+
