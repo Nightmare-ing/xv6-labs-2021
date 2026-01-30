@@ -120,6 +120,7 @@ found:
   p->pid = allocpid();
   p->state = USED;
   p->num_ticks = 0;
+  p->handler_lock = 0;
 
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){

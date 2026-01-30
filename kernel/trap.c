@@ -69,8 +69,9 @@ usertrap(void)
     // ok
       if(which_dev == 2) {
         p->num_ticks++;
-        if (p->alarm_interval != 0 && p->num_ticks >= p->alarm_interval) {
+        if (p->alarm_interval != 0 && p->handler_lock == 0 && p->num_ticks >= p->alarm_interval) {
             p->num_ticks = 0;
+            p->handler_lock = 1;
 
             p->ra = p->trapframe->ra;
 

@@ -224,6 +224,8 @@ uint64 sys_sigreturn(void) {
 
     p->trapframe->sp = p->sp;
     p->trapframe->epc = p->epc;
+
+    p->handler_lock = 0;
     return 0;
 }
 
