@@ -200,3 +200,34 @@ Thus we need to jump back to user code and then execute the `periodic`
 function after we finish running in kernel mode. To do this, we need to change
 the `sepc`, which is stored in `p->trapframe->epc`.
 
+As is shown in the following figure, the process is interrupted by the timer,
+then it jumps to `sys_sigalarm`. After finishing `sys_sigalarm`, it restores
+everything in the page table and tends to jump back to where the original
+process was interrupted.
+However, because we modified `epc`, which is stored in `p->trapframe->epc`,
+kernel will set `pc` to where the `handler` is.
+
+By executing `handler`, it modifies something in the page table, and then call
+`sys_sigreturn` to jump back to where the original process was interrupted.
+At the end of this system call, if `sys_sigreturn` does nothing, the kernel 
+will restore everything inside the page table `B`.
+However, because we want to jump back to where the process was interrupted, we
+modify `p->trapframe->epc` again.
+
+When we first enter `sys_sigalarm`, kernel will increment and save `pc` to 
+`p->trapframe->epc`, thus we have to store this value somewhere else in the
+`struct proc`.
+And when we return from `sys_sigreturn`, we have to retrieve this value and put
+it into `p->trapframe->epc` to jump back.
+
+Besides, when the original process was interrupted, it has no time to save
+Caller registers, thus in `sys_sigalarm` need to save those Caller registers to
+restore the environment.
+And at the end of `handler`, if it returns successfully, by convention it'll
+restore all Callee registers, and thus we don't need to store those registers.
+However, because `handler` jumps to `sys_sigreturn` and never jumps back and
+then return, `handler` fails to restore those Callee registers, so we also have
+to store Callee registers manually.
+
+![Alarm calling process](assets/alarm_process.png)
+

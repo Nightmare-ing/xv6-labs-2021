@@ -24,3 +24,4 @@ ph
 barrier
 compile_commands.json
 .cache/*
+**/.DS_Store
