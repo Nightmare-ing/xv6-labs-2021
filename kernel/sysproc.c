@@ -1,11 +1,13 @@
 #include "types.h"
 #include "riscv.h"
+#include "param.h"
 #include "defs.h"
 #include "date.h"
-#include "param.h"
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
+#include "sysinfo.h"
+
 
 uint64
 sys_exit(void)
@@ -46,6 +48,7 @@ sys_sbrk(void)
 
   if(argint(0, &n) < 0)
     return -1;
+  
   addr = myproc()->sz;
   if(growproc(n) < 0)
     return -1;
@@ -57,6 +60,7 @@ sys_sleep(void)
 {
   int n;
   uint ticks0;
+
 
   if(argint(0, &n) < 0)
     return -1;
@@ -70,8 +74,47 @@ sys_sleep(void)
     sleep(&ticks, &tickslock);
   }
   release(&tickslock);
+
+  backtrace();
   return 0;
 }
+
+
+#ifdef LAB_PGTBL
+int sys_pgaccess(void) {
+    uint64 va_start = 0;
+    int n = 0;
+    uint64 buffer_addr = 0;
+    uint64 buffer = 0;
+
+    // retrieve arguments
+    if (argaddr(0, &va_start) < 0 || argint(1, &n) < 0 || argaddr(2, &buffer_addr) < 0) {
+        return -1;
+    }
+
+    // check whether n is in valid arange
+    if (n < 0 || n > 64) {
+        printf("error: the maximum pages to check is 64, i.e. 0 < n < 64. You are requesting to check %d pages", n);
+    }
+
+    uint64 va = va_start;
+    struct proc *p = myproc();
+
+    for (int i = 0; i < n; ++i) {
+        pte_t *pte = walk(p->pagetable, va, 0);
+        if ((PTE_A & (*pte)) != 0) {
+            buffer |= (1L << i);
+        }
+        // clear PTE_A after checking it
+        *pte &= (~PTE_A);
+        va += PGSIZE;
+    }
+
+    copyout(p->pagetable, buffer_addr, (char *)&buffer, 8);
+
+    return 0;
+}
+#endif
 
 uint64
 sys_kill(void)
@@ -95,3 +138,94 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+uint64 sys_trace(void) {
+    int mask = 0;
+
+    if (argint(0, &mask) < 0) {
+        return -1;
+    }
+
+    myproc()->traced_syscall = mask;
+    return 0;
+}
+
+uint64 sys_sysinfo(void) {
+    struct sysinfo sinfo;
+    uint64 info_t = 0; // user pointer to struct sysinfo
+    struct proc *p = myproc();
+
+    if (argaddr(0, &info_t) < 0) {
+        return -1;
+    }
+
+    // fill out sysinfo struct with collected information
+    sinfo.freemem = free_mem_size();
+    sinfo.nproc = proc_num();
+
+    if (copyout(p->pagetable, info_t, (char *)&sinfo, sizeof(sinfo)) < 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+uint64 sys_sigalarm(void) {
+    int interval = 0;
+    void (*handler)() = 0;
+    struct proc *p = myproc();
+
+    if (argint(0, &interval) < 0) {
+        return -1;
+    }
+    p->alarm_interval = interval;
+
+    if (argaddr(1, (uint64 *)&handler) < 0) {
+        return -1;
+    }
+    p->alarm_handler = handler;
+
+    return 0;
+}
+
+uint64 sys_sigreturn(void) {
+    struct proc *p = myproc();
+    p->trapframe->ra = p->ra;
+
+    p->trapframe->t0 = p->t0;
+    p->trapframe->t1 = p->t1;
+    p->trapframe->t2 = p->t2;
+    p->trapframe->t3 = p->t3;
+    p->trapframe->t4 = p->t4;
+    p->trapframe->t5 = p->t5;
+    p->trapframe->t6 = p->t6;
+
+    p->trapframe->a0 = p->a0;
+    p->trapframe->a1 = p->a1;
+    p->trapframe->a2 = p->a2;
+    p->trapframe->a3 = p->a3;
+    p->trapframe->a4 = p->a4;
+    p->trapframe->a5 = p->a5;
+    p->trapframe->a6 = p->a6;
+    p->trapframe->a7 = p->a7;
+
+    p->trapframe->s0 = p->s0;
+    p->trapframe->s1 = p->s1;
+    p->trapframe->s2 = p->s2;
+    p->trapframe->s3 = p->s3;
+    p->trapframe->s4 = p->s4;
+    p->trapframe->s5 = p->s5;
+    p->trapframe->s6 = p->s6;
+    p->trapframe->s7 = p->s7;
+    p->trapframe->s8 = p->s8;
+    p->trapframe->s9 = p->s9;
+    p->trapframe->s10 = p->s10;
+    p->trapframe->s11 = p->s11;
+
+    p->trapframe->sp = p->sp;
+    p->trapframe->epc = p->epc;
+
+    p->handler_lock = 0;
+    return 0;
+}
+
