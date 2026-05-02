@@ -375,6 +375,9 @@ copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
             pa0 = (uint64)mem;
         }
     }
+    if ((flags & PTE_COW) == 0 && (flags & PTE_W) == 0) {
+        return -1;
+    }
 
     n = PGSIZE - (dstva - va0);
     if(n > len)
