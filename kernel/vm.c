@@ -303,7 +303,6 @@ uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
   pte_t *pte;
   uint64 pa, i;
   uint flags;
-//   char *mem;
 
   for(i = 0; i < sz; i += PGSIZE){
     if((pte = walk(old, i, 0)) == 0)
@@ -311,19 +310,15 @@ uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
     if((*pte & PTE_V) == 0)
       panic("uvmcopy: page not present");
     pa = PTE2PA(*pte);
-    flags = (PTE_FLAGS(*pte) | PTE_COW) & (~PTE_W);
-//     if((mem = kalloc()) == 0)
-//       goto err;
-//     memmove(mem, (char*)pa, PGSIZE);
-//     if(mappages(new, i, PGSIZE, (uint64)mem, flags) != 0){
-//       kfree(mem);
-//       goto err;
-//     }
-    if (mappages(new, i, PGSIZE, pa, flags) != 0) {
+    flags = PTE_FLAGS(*pte);
+    uint updated_flags = (flags | PTE_COW) & (~PTE_W);
+    // cow: map old physical pages to new page table
+    if (mappages(new, i, PGSIZE, pa, updated_flags) != 0) {
         goto err;
     }
-    *pte &= ~PTE_W;
-    *pte |= PTE_COW;
+    // update flags of old PTE
+    *pte = (*pte | PTE_COW) & (~PTE_W);
+    // increment ref cnt
     incre_mem_refcount((void *) pa);
   }
   return 0;
@@ -360,12 +355,20 @@ copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
     if(pa0 == 0)
       return -1;
 
-    // if the target is a COW page and not writable
+    // if the target is not a COW page, and not valid for writing
     pte_t *pte = walk(pagetable, va0, 0);
     uint flags = PTE_FLAGS(*pte);
-    char *mem;
+    if (pte == 0 || (flags & PTE_V) == 0 || (flags & PTE_U) == 0) {
+        return -1;
+    }
+    if ((flags & PTE_COW) == 0 && (flags & PTE_W) == 0) {
+        return -1;
+    }
+
+    // only in cow case, allocate new page first
     if ((flags & PTE_COW) != 0 && (flags & PTE_W) == 0) {
-        if ((mem = kalloc()) == 0) {
+        char *mem = kalloc();
+        if (mem == 0) {
             return -1;
         } else {
             memmove(mem, (char *)pa0, PGSIZE);
@@ -374,9 +377,6 @@ copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
             kfree((void *)pa0);
             pa0 = (uint64)mem;
         }
-    }
-    if ((flags & PTE_COW) == 0 && (flags & PTE_W) == 0) {
-        return -1;
     }
 
     n = PGSIZE - (dstva - va0);

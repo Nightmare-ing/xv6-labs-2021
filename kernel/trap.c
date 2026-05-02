@@ -120,9 +120,10 @@ usertrap(void)
         uint64 pa = PTE2PA(*pte);
         uint flags = PTE_FLAGS(*pte);
 
-        if ((flags & PTE_COW) != 0 && (flags & PTE_W) == 0) {
-            char *mem;
-            if ((mem = kalloc()) == 0) {
+        // only in COW case, and page is user valid, can allocate new pages
+        if ((flags & PTE_COW) != 0 && (flags & PTE_U) != 0 && (flags & PTE_V) != 0) {
+            char *mem = kalloc();
+            if (mem == 0) {
                 p->killed = 1;
             } else {
                 memmove(mem, (char *)pa, PGSIZE);
@@ -130,6 +131,8 @@ usertrap(void)
                 *pte |= ((flags | PTE_W ) & (~PTE_COW));
                 kfree((void *)pa);
             }
+        } else {
+            p->killed = 1;
         }
     }
   } else {

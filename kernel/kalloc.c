@@ -59,6 +59,8 @@ kfree(void *pa)
       release(&kmem.lock);
       return;
   }
+  // if ref_cnt is 1 or 0, should be freed, thus can set to 0 for both cases
+  kmem.mem_refcount[(uint64) pa / PGSIZE] = 0;
   release(&kmem.lock);
   // Fill with junk to catch dangling refs.
   memset(pa, 1, PGSIZE);
