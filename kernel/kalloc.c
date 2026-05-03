@@ -30,6 +30,7 @@ kinit()
 {
   initlock(&kmem.lock, "kmem");
   freerange(end, (void*)PHYSTOP);
+  memset(kmem.mem_refcount, 0, PHYSTOP / PGSIZE);
 }
 
 void
