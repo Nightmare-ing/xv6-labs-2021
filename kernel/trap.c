@@ -117,19 +117,12 @@ usertrap(void)
         p->killed = 1;
     } else {
         pte_t *pte = walk(p->pagetable, va, 0);
-        uint64 pa = PTE2PA(*pte);
         uint flags = PTE_FLAGS(*pte);
 
         // only in COW case, and page is user valid, can allocate new pages
         if ((flags & PTE_COW) != 0 && (flags & PTE_U) != 0 && (flags & PTE_V) != 0) {
-            char *mem = kalloc();
-            if (mem == 0) {
+            if (cowpgflt(pte) == 0) {
                 p->killed = 1;
-            } else {
-                memmove(mem, (char *)pa, PGSIZE);
-                *pte = PA2PTE(mem);
-                *pte |= ((flags | PTE_W ) & (~PTE_COW));
-                kfree((void *)pa);
             }
         } else {
             p->killed = 1;
@@ -286,3 +279,19 @@ devintr()
   }
 }
 
+// Handle page fault, fail if return 0, otherwise return the address of
+// allocated physical page
+char *cowpgflt(pte_t *pte) {
+    uint64 pa = PTE2PA(*pte);
+    uint flags = PTE_FLAGS(*pte);
+    char *mem = kalloc();
+    if (mem == 0) {
+        return 0;
+    } else {
+        memmove(mem, (char *)pa, PGSIZE);
+        *pte = PA2PTE(mem);
+        *pte |= ((flags | PTE_W ) & (~PTE_COW));
+        kfree((void *)pa);
+    }
+    return mem;
+}

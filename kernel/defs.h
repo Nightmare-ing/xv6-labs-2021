@@ -149,6 +149,8 @@ void            trapinit(void);
 void            trapinithart(void);
 extern struct spinlock tickslock;
 void            usertrapret(void);
+char            *cowpgflt(pte_t *pte);
+
 
 // uart.c
 void            uartinit(void);

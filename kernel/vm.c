@@ -367,15 +367,8 @@ copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
 
     // only in cow case, allocate new page first
     if ((flags & PTE_COW) != 0 && (flags & PTE_W) == 0) {
-        char *mem = kalloc();
-        if (mem == 0) {
+        if ((pa0 = (uint64)cowpgflt(pte)) == 0) {
             return -1;
-        } else {
-            memmove(mem, (char *)pa0, PGSIZE);
-            *pte = PA2PTE(mem);
-            *pte |= ((flags | PTE_W) & (~PTE_COW));
-            kfree((void *)pa0);
-            pa0 = (uint64)mem;
         }
     }
 
