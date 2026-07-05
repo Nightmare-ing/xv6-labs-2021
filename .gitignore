@@ -5,6 +5,7 @@ _*
 *.asm
 *.sym
 *.img
+.DS_Store
 vectors.S
 bootblock
 entryother
@@ -20,5 +21,7 @@ myapi.key
 xv6.out*
 .vagrant/
 submissions/
+.cache/*
 ph
 barrier
+
