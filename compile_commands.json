@@ -1,0 +1,21 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-DSOL_PGTBL",
+      "-DLAB_PGTBL",
+      "-Werror",
+      "-Wall",
+      "-I.",
+      "-I",
+      "/usr/local/include",
+      "-o",
+      "mkfs/mkfs",
+      "mkfs/mkfs.c"
+    ],
+    "directory": "/Users/smile/Code/xv6-labs-2021",
+    "file": "/Users/smile/Code/xv6-labs-2021/mkfs/mkfs.c",
+    "output": "/Users/smile/Code/xv6-labs-2021/mkfs/mkfs"
+  }
+]
