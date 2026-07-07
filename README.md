@@ -307,3 +307,23 @@ By the way, on Linux system the compiled ELF file might be smaller than the
 compiled ELF file on macOS. I run this on macOS, so encountered this `balloc`
 issue.
 
+## Multithreading
+
+From this lab on, I don't merge each lab branch into main branch, so you have
+to check the code for each lab by switching branches.
+
+### Uthread: Switching between Threads
+
+The code to save/restore registers is similar to code in xv6's kernel for
+scheduling. Thus we need to create a struct `context` in `thread`.
+
+Then to use spearate stack for different thread, we need to set `context.sp` to
+`thread.stack`. However, because the stack grows downwards, so `context.sp`
+should point to the end of the stack, i.e. `thread.stack[STACK_SIZE]` instead
+of `thread.stack[STACK_SIZE - 1]` or `thread.stack[0]`, because the address of 
+the end of the stack is the beginning of `thread.stack[STACK_SIZE]`.
+
+When we create thread, we want to switch to execute each function, so we have
+to store the address of the function to `context.ra`. Then each time it's the
+turn for a thread to run, it'll jump to that function and start executing.
+
