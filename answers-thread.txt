@@ -1,0 +1,15 @@
+`T0`: insert `{key: 0, val: 0}` into `table[0]`
+`T1`: insert `{key: 50000, val: 1}` into `table[0]`
+
+The sequence of events that can lead to a key being missing can be:
+
+1. `T0` creates entry with `e0 = {key: 0, val: 0}` in `insert`.
+2. `T1` creates entry with `e1 = {key: 50000, val: 1}` in `insert`.
+3. `T0` sets `e0->next` = n, i.e. the first item in `table[0]`.
+4. `T1` sets `e1->next` = n, i.e. the first item in `table[0]`.
+5. `T0` changes the pointer of `table[0]` to `e0`, thus `e0` becomes the first
+  item of `table[0]`.
+6. `T1` changes the pointer of `table[0]` to `e1`, thus `e1` becomes the first
+item of `table[0]`
+
+Then `table[0]` losts key `0`.
