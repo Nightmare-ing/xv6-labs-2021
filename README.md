@@ -327,3 +327,32 @@ When we create thread, we want to switch to execute each function, so we have
 to store the address of the function to `context.ra`. Then each time it's the
 turn for a thread to run, it'll jump to that function and start executing.
 
+### Using Threads
+
+#### Why are there missing keys with 2 threads, but not with 1 thread?
+
+`T0`: insert `{key: 0, val: 0}` into `table[0]`
+`T1`: insert `{key: 50000, val: 1}` into `table[0]`
+
+The sequence of events that can lead to a key being missing can be:
+
+1. `T0` creates entry with `e0 = {key: 0, val: 0}` in `insert`.
+2. `T1` creates entry with `e1 = {key: 50000, val: 1}` in `insert`.
+3. `T0` sets `e0->next` = n, i.e. the first item in `table[0]`.
+4. `T1` sets `e1->next` = n, i.e. the first item in `table[0]`.
+5. `T0` changes the pointer of `table[0]` to `e0`, thus `e0` becomes the first
+  item of `table[0]`.
+6. `T1` changes the pointer of `table[0]` to `e1`, thus `e1` becomes the first
+item of `table[0]`
+
+Then `table[0]` losts key `0`.
+
+![Missing key in multi-threading](./miss-key.png)
+
+On M1 Max Mac Studio, it seems that for `NBUCKET=5`, `keys=100000`, the performance
+of `./ph 2` for finer locks code is a little bit worse than the single global lock
+version, seems to relate to Apple's 128 byte cache structure design.
+However, on Macbook Pro 2016 version with Intel i5 core, the finer lock version is
+faster than the single global lock version
+
+
