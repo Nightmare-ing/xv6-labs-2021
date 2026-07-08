@@ -348,7 +348,6 @@ item of `table[0]`
 Then `table[0]` losts key `0`.
 
 <img src="./assets/miss-key.png" alt="Missing Key in Multithreading" width="600"/>
-![Missing key in multi-threading](./assets/miss-key.png)
 
 On M1 Max Mac Studio, it seems that for `NBUCKET=5`, `keys=100000`, the performance
 of `./ph 2` for finer locks code is a little bit worse than the single global lock
