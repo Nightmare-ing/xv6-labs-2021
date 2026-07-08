@@ -30,7 +30,19 @@ barrier()
   // Block until all threads have called barrier() and
   // then increment bstate.round.
   //
-  
+  pthread_mutex_lock(&bstate.barrier_mutex);
+  if (++bstate.nthread == nthread) { // I'm the last thread in this round
+    bstate.nthread = 0;
+    pthread_cond_broadcast(&bstate.barrier_cond);
+    bstate.round++;
+  } else { // I'm not the last thread in this round
+    int rnd = bstate.round; // remember my round
+    // if the round is changed, I should not continue to sleep
+    while (rnd == bstate.round) {
+      pthread_cond_wait(&bstate.barrier_cond, &bstate.barrier_mutex);
+    }
+  }
+  pthread_mutex_unlock(&bstate.barrier_mutex);
 }
 
 static void *
