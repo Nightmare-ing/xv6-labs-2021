@@ -355,4 +355,22 @@ version, seems to relate to Apple's 128 byte cache structure design.
 However, on Macbook Pro 2016 version with Intel i5 core, the finer lock version is
 faster than the single global lock version
 
+### Barrier
 
+- `bstate.round` stands for the current barrier round
+- `nthread` stands for the number of threads entered the barrier
+
+The logic is as following, every time each thread enters `barrier`
+
+- Increment `nthread`
+- If it's the last thread in this round, i.e. `bstate.nthread == nthread`, it should
+  wake up all previous waiting threads, and do some cleanup.
+  - Clear `nthread`
+  - Start the next round by increment `bstate.round`
+- If it's not the last thread in this round
+  - It should sleep and wait for the wakeup
+  - After a random period of time, it wakeup, it should check whether this round has finished.
+  - If this round has finished, it should continue running.
+  - If this round hasn't finished, it should go to sleep again.
+  - Thus it needs to remember it's round to a local variable, and if `bstate.round != round`,
+    it should not go to sleep again
